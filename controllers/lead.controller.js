@@ -1,5 +1,10 @@
 import Lead from "../models/Lead.model.js";
 import { createError } from "../utils/error.js";
+import {
+  sendLeadNotification,
+  sendWelcomeEmail,
+} from "../utils/emailService.js";
+import logger from "../config/logger.js";
 
 export const createLead = async (req, res, next) => {
   try {
@@ -28,6 +33,18 @@ export const createLead = async (req, res, next) => {
       services,
       projectDetails,
     });
+
+    // Send email notifications (don't block response if email fails)
+    const emailPromises = [sendLeadNotification(lead), sendWelcomeEmail(lead)];
+
+    // Send emails asynchronously without waiting for them to complete
+    Promise.all(emailPromises)
+      .then((results) => {
+        logger.info("Email notifications processed:", results);
+      })
+      .catch((error) => {
+        logger.error("Error processing email notifications:", error);
+      });
 
     res.status(201).json({
       success: true,

@@ -2,6 +2,10 @@ import User from "../models/User.model.js";
 import { createError } from "../utils/error.js";
 import { generateToken } from "../utils/token.js";
 import Lead from "../models/Lead.model.js";
+import Job from "../models/Job.model.js";
+import JobApplication from "../models/JobApplication.model.js";
+import Portfolio from "../models/Portfolio.model.js";
+import Contact from "../models/Contact.model.js";
 import nodemailer from "nodemailer";
 
 // Simple in-memory OTP storage (replace with database in production)
@@ -116,12 +120,38 @@ export const verify2FA = async (req, res, next) => {
 
 export const getDashboardStats = async (req, res, next) => {
   try {
-    const totalLeads = await Lead.countDocuments();
+    // Get counts for all entities
+    const [
+      totalLeads,
+      totalJobs,
+      totalJobApplications,
+      totalPortfolioItems,
+      totalContacts,
+      activeJobs,
+      newLeads,
+      pendingApplications,
+    ] = await Promise.all([
+      Lead.countDocuments(),
+      Job.countDocuments(),
+      JobApplication.countDocuments(),
+      Portfolio.countDocuments(),
+      Contact.countDocuments(),
+      Job.countDocuments({ status: "active" }),
+      Lead.countDocuments({ status: "new" }),
+      JobApplication.countDocuments({ status: "pending" }),
+    ]);
 
     res.status(200).json({
       success: true,
       stats: {
         totalLeads,
+        totalJobs,
+        totalJobApplications,
+        totalPortfolioItems,
+        totalContacts,
+        activeJobs,
+        newLeads,
+        pendingApplications,
       },
     });
   } catch (error) {

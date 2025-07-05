@@ -1,3 +1,3 @@
-# NextElligentia Backend
+# Nextelligentia Backend
 
-Backend API for NextElligentia website project.
+Backend API for Nextelligentia website project.
